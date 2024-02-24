@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import "ol/ol.css";
 import Map from "ol/Map";
 import View from "ol/View";
@@ -11,44 +11,50 @@ import VectorSource from "ol/source/Vector";
 import Feature from "ol/Feature";
 import Geometry from "ol/geom/Geometry";
 import MapBrowserEvent from "ol/MapBrowserEvent";
-
-const geojsonData = {
-    type: "FeatureCollection",
-    features: [
-        {
-            type: "Feature",
-            geometry: {
-                type: "Point",
-                coordinates: [3286012.0935983104, 9006746.720218109],
-            },
-            properties: {
-                name: "Koti",
-            },
-        },
-    ],
-};
-
-// Create a new GeoJSON format parser instance
-const geoJSONFormat = new GeoJSON();
-
-// Parse the GeoJSON data into an OpenLayers feature
-const features = geoJSONFormat.readFeatures(geojsonData);
-
-// Create a vector source and add the features
-const vectorSource = new VectorSource({
-    features: features, // Pass an array of features
-});
-
-// Create a vector layer and add the source
-const vectorLayer = new VectorLayer({
-    source: vectorSource as VectorSource<Feature<Geometry>>,
-});
+import { useGeographic } from "ol/proj";
 
 function OLMap() {
+    const [geojsonData, setGeojsonData] = useState(null);
     const mapRef = useRef(null);
 
+    useGeographic();
+
     useEffect(() => {
-        if (!mapRef.current) return;
+        const fetchGeoJson = async () => {
+            try {
+                const response = await fetch("src/assets/export.geojson");
+                if (!response.ok) {
+                    throw new Error(
+                        `Failed to fetch GeoJSON (${response.status} ${response.statusText})`
+                    );
+                }
+                const data = await response.json();
+                setGeojsonData(data);
+            } catch (error) {
+                console.error("Error fetching GeoJSON:", error);
+                throw error;
+            }
+        };
+
+        fetchGeoJson();
+    }, []);
+
+    useEffect(() => {
+        if (!mapRef.current || !geojsonData) return;
+
+        console.log(geojsonData);
+
+        const features = new GeoJSON().readFeatures(geojsonData);
+
+        console.log(features);
+
+        const vectorSource = new VectorSource({
+            features: features,
+        });
+
+        const vectorLayer = new VectorLayer({
+            source: vectorSource as VectorSource<Feature<Geometry>>,
+        });
 
         const map = new Map({
             target: mapRef.current,
@@ -59,8 +65,8 @@ function OLMap() {
                 vectorLayer,
             ],
             view: new View({
-                center: [3282802.75875484, 8989233.876836976], // Start from Joensuu
-                zoom: 9.377050107672698,
+                center: [29.77208484658834, 62.58383087994005], // Start from Joensuu
+                zoom: 12,
             }),
         });
 
@@ -79,7 +85,7 @@ function OLMap() {
         return () => {
             map.dispose();
         };
-    }, []);
+    }, [geojsonData]);
 
     return <div ref={mapRef} id="map" />;
 }
