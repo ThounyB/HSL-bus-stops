@@ -12,6 +12,8 @@ import Feature from "ol/Feature";
 import Geometry from "ol/geom/Geometry";
 import { useGeographic } from "ol/proj";
 import SideBar from "./SideBar";
+import Overlay from "ol/Overlay";
+import { Point } from "ol/geom";
 
 interface LayerVisibility {
     [key: string]: boolean;
@@ -37,12 +39,6 @@ function OLMap() {
 
     function toggleLayerVisibility(layerName: string) {
         const layer = layerMap?.[layerName];
-
-        console.log("LAyer ", layer);
-        console.log("LayerName: ", layerName);
-
-        console.log("layermap ", layerMap);
-
         if (layer) {
             layer.setVisible(!layer.getVisible());
             setLayerVisibility((prev) => ({
@@ -115,6 +111,41 @@ function OLMap() {
             }),
         });
 
+        const overlayElement = document.createElement("div");
+        overlayElement.classList.add("info-overlay");
+
+        const overlay = new Overlay({
+            element: overlayElement,
+            autoPan: true,
+        });
+
+        map.addOverlay(overlay);
+
+        map.on("pointermove", (event) => {
+            const features = map.getFeaturesAtPixel(event.pixel);
+            const feature = features ? (features[0] as Feature) : null;
+
+            if (feature) {
+                const geometry = feature.getGeometry() as Point;
+                const coordinates = geometry.getCoordinates();
+
+                const nimi1 = feature.get("NIMI1");
+                // const nimi2 = feature.get("NIMI2");
+
+                // const p1 = document.createElement("p");
+                // const p2 = document.createElement("p");
+                // p1.textContent = nimi1;
+                // p2.textContent = nimi2;
+                // overlayElement.appendChild(p1);
+                // overlayElement.appendChild(p2);
+
+                overlayElement.textContent = nimi1;
+
+                overlay.setPosition(coordinates);
+            } else {
+                overlay.setPosition(undefined);
+            }
+        });
         return () => {
             map.dispose();
         };
