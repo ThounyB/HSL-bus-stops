@@ -9,9 +9,25 @@ function SideBar({ toggleLayerVisibility }: Props) {
                 <li>
                     <button
                         className="toggle-button"
+                        onClick={() => toggleLayerVisibility("line0")}
+                    >
+                        {/* <img src={icon}></img> */}Verkko 0
+                    </button>
+                </li>
+                <li>
+                    <button
+                        className="toggle-button"
+                        onClick={() => toggleLayerVisibility("line1")}
+                    >
+                        Verkko 1
+                    </button>
+                </li>
+                <li>
+                    <button
+                        className="toggle-button"
                         onClick={() => toggleLayerVisibility("line2")}
                     >
-                        {/* <img src={icon}></img> */}2
+                        Verkko 2
                     </button>
                 </li>
                 <li>
@@ -19,7 +35,15 @@ function SideBar({ toggleLayerVisibility }: Props) {
                         className="toggle-button"
                         onClick={() => toggleLayerVisibility("line3")}
                     >
-                        3
+                        Verkko 3
+                    </button>
+                </li>
+                <li>
+                    <button
+                        className="toggle-button"
+                        onClick={() => toggleLayerVisibility("line4")}
+                    >
+                        Verkko 4
                     </button>
                 </li>
             </ul>

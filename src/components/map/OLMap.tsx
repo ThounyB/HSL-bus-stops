@@ -21,11 +21,13 @@ function OLMap() {
     const [geojsonData, setGeojsonData] = useState(null);
     const mapRef = useRef(null);
     const [layerVisibility, setLayerVisibility] = useState<LayerVisibility>({
-        line2: true,
+        line0: false,
+        line1: false,
+        line2: false,
         line3: false,
+        line4: false,
     });
 
-    // const [mapState, setMapState] = useState<Map | null>(null);
     const [layerMap, setLayerMap] = useState<Record<
         string,
         VectorLayer<VectorSource<Feature<Geometry>>>
@@ -35,6 +37,11 @@ function OLMap() {
 
     function toggleLayerVisibility(layerName: string) {
         const layer = layerMap?.[layerName];
+
+        console.log("LAyer ", layer);
+        console.log("LayerName: ", layerName);
+
+        console.log("layermap ", layerMap);
 
         if (layer) {
             layer.setVisible(!layer.getVisible());
@@ -68,33 +75,31 @@ function OLMap() {
     useEffect(() => {
         if (!mapRef.current || !geojsonData) return;
 
+        const lines = [0, 1, 2, 3, 4];
+
         const features = new GeoJSON().readFeatures(geojsonData);
 
-        const filteredFeatures2 = features.filter(
-            (feature) => feature.get("VERKKO") === 2
+        const mapLayers: VectorLayer<VectorSource<Feature<Geometry>>>[] = [];
+
+        for (const lineNumber of lines) {
+            const lineFeatures = features.filter(
+                (feature) => feature.get("VERKKO") === lineNumber
+            );
+
+            const vectorSource = new VectorSource({ features: lineFeatures });
+            const vectorLayer = new VectorLayer({
+                source: vectorSource as VectorSource<Feature<Geometry>>,
+                visible: layerVisibility[`line${lineNumber}`],
+            });
+
+            mapLayers.push(vectorLayer);
+        }
+
+        const newLayerMAp = Object.fromEntries(
+            mapLayers.map((layer, index) => [`line${index}`, layer])
         );
 
-        const filteredFeatures3 = features.filter(
-            (feature) => feature.get("VERKKO") === 3
-        );
-
-        const vectorSource2 = new VectorSource({
-            features: filteredFeatures2,
-        });
-        const vectorSource3 = new VectorSource({
-            features: filteredFeatures3,
-        });
-
-        const vectorLayer2 = new VectorLayer({
-            source: vectorSource2 as VectorSource<Feature<Geometry>>,
-            visible: layerVisibility.line2,
-        });
-        const vectorLayer3 = new VectorLayer({
-            source: vectorSource3 as VectorSource<Feature<Geometry>>,
-            visible: layerVisibility.line3,
-        });
-
-        setLayerMap({ line2: vectorLayer2, line3: vectorLayer3 });
+        setLayerMap(newLayerMAp);
 
         const map = new Map({
             target: mapRef.current,
@@ -102,8 +107,7 @@ function OLMap() {
                 new TileLayer({
                     source: new OSM(),
                 }),
-                vectorLayer2,
-                vectorLayer3,
+                ...mapLayers,
             ],
             view: new View({
                 center: [24.87413567501612, 60.19903248030195],
@@ -111,29 +115,10 @@ function OLMap() {
             }),
         });
 
-        // setMapState(map);
-
         return () => {
             map.dispose();
         };
     }, [geojsonData]);
-
-    // function addVectorLayersToMap() {
-    //     if (!mapState || !layerMap) return;
-
-    //     const addedLayerNames = new Set<string>();
-
-    //     Object.entries(layerMap).forEach(([layerName, layer]) => {
-    //         if (!addedLayerNames.has(layerName)) {
-    //             mapState.addLayer(layer);
-    //             addedLayerNames.add(layerName);
-    //         }
-    //     });
-    // }
-
-    // useEffect(() => {
-    //     addVectorLayersToMap();
-    // }, [mapState]);
 
     return (
         <div>
