@@ -96,7 +96,7 @@ function OLMap() {
     }, [geojsonData]);
 
     return (
-        <div className="map-view">
+        <div>
             <div ref={mapRef} id="map" />
             <SideBar toggleLayers={toggleLayers} layer={layer} />
         </div>
