@@ -3,14 +3,16 @@ import "./sidebar.css";
 import VectorSource from "ol/source/Vector";
 import { Feature } from "ol";
 import { Geometry } from "ol/geom";
-import icon from "../bus-solid.svg";
+import icon from "../../assets/bus-solid.svg";
 
 interface Props {
-    toggleLayers: (layer: VectorLayer<VectorSource<Feature<Geometry>>>) => void;
-    layer: VectorLayer<VectorSource<Feature<Geometry>>> | null;
+    toggleLayers: (
+        layer: VectorLayer<VectorSource<Feature<Geometry>>>[]
+    ) => void;
+    layers: VectorLayer<VectorSource<Feature<Geometry>>>[] | null;
 }
-function SideBar({ toggleLayers, layer }: Props) {
-    if (!layer) {
+function SideBar({ toggleLayers, layers }: Props) {
+    if (!layers) {
         return;
     }
     return (
@@ -19,9 +21,50 @@ function SideBar({ toggleLayers, layer }: Props) {
                 <li>
                     <button
                         className="toggle-button"
-                        onClick={() => toggleLayers(layer)}
+                        onClick={() => toggleLayers(layers)}
                     >
                         <img src={icon}></img>
+                    </button>
+                </li>
+                <li>
+                    <button
+                        className="toggle-button"
+                        onClick={() => toggleLayers(layers)}
+                    >
+                        <img src={icon}></img>0
+                    </button>
+                </li>
+                <li>
+                    <button
+                        className="toggle-button"
+                        onClick={() => toggleLayers(layers)}
+                    >
+                        <img src={icon}></img>1
+                    </button>
+                </li>
+
+                <li>
+                    <button
+                        className="toggle-button"
+                        onClick={() => toggleLayers(layers)}
+                    >
+                        <img src={icon}></img>2
+                    </button>
+                </li>
+                <li>
+                    <button
+                        className="toggle-button"
+                        onClick={() => toggleLayers(layers)}
+                    >
+                        <img src={icon}></img>3
+                    </button>
+                </li>
+                <li>
+                    <button
+                        className="toggle-button"
+                        onClick={() => toggleLayers(layers)}
+                    >
+                        <img src={icon}></img>4
                     </button>
                 </li>
             </ul>

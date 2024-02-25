@@ -11,21 +11,28 @@ import VectorSource from "ol/source/Vector";
 import Feature from "ol/Feature";
 import Geometry from "ol/geom/Geometry";
 import MapBrowserEvent from "ol/MapBrowserEvent";
+// import Select from "ol/interaction/Select";
 import { useGeographic } from "ol/proj";
 import SideBar from "./SideBar";
+import { Overlay } from "ol";
 
 function OLMap() {
     const [geojsonData, setGeojsonData] = useState(null);
     const mapRef = useRef(null);
+    // const [selectedLayer, setSelectedLayer] = useState();
 
-    const [layer, setLayer] = useState<VectorLayer<
-        VectorSource<Feature<Geometry>>
-    > | null>(null);
+    const [layers, setLayers] = useState<
+        VectorLayer<VectorSource<Feature<Geometry>>>[] | null
+    >(null);
 
     useGeographic();
 
-    function toggleLayers(layer: VectorLayer<VectorSource<Feature<Geometry>>>) {
-        layer.setVisible(!layer.getVisible());
+    function toggleLayers(
+        layers: VectorLayer<VectorSource<Feature<Geometry>>>[]
+    ) {
+        layers.forEach((layer) => {
+            layer.setVisible(!layer.getVisible());
+        });
     }
 
     useEffect(() => {
@@ -53,16 +60,26 @@ function OLMap() {
 
         const features = new GeoJSON().readFeatures(geojsonData);
 
-        const vectorSource = new VectorSource({
-            features: features,
+        console.log();
+
+        const verkko0Feature = features.filter((feature) => {
+            return feature.get("VERKKO") === 0;
         });
 
-        const vectorLayer = new VectorLayer({
-            source: vectorSource as VectorSource<Feature<Geometry>>,
+        // const verkko1Feature = features.filter((feature) => {
+        //     return feature.get("VERKKO") === 1;
+        // });
+
+        const vectorSourceVerkko0 = new VectorSource({
+            features: verkko0Feature,
+        });
+
+        const vectorLayerVerkko0 = new VectorLayer({
+            source: vectorSourceVerkko0 as VectorSource<Feature<Geometry>>,
             visible: true,
         });
 
-        setLayer(vectorLayer);
+        setLayers([vectorLayerVerkko0]);
 
         const map = new Map({
             target: mapRef.current,
@@ -70,13 +87,67 @@ function OLMap() {
                 new TileLayer({
                     source: new OSM(),
                 }),
-                vectorLayer,
+                vectorLayerVerkko0,
             ],
             view: new View({
                 center: [24.87413567501612, 60.19903248030195],
                 zoom: 14,
             }),
         });
+
+        const overlay = new Overlay({
+            element: document.createElement("div"),
+            positioning: "bottom-center",
+            offset: [0, -10], // Offset to adjust the position of the overlay
+            autoPan: true,
+        });
+
+        map.addOverlay(overlay);
+
+        // const select = new Select();
+
+        // map.addInteraction(select);
+
+        // Event listener for when a feature is selected
+        // select.on("select", (event) => {
+        //     const selectedFeature = event.selected[0];
+        //     if (selectedFeature) {
+        //         const info = selectedFeature.get("NIMI1");
+        //         overlay.setPosition(event.mapBrowserEvent.coordinate);
+
+        //         const overlayElement = overlay.getElement();
+
+        //         if (!overlayElement) {
+        //             return;
+        //         }
+        //         overlayElement.classList.add("bus-stop-overlay");
+        //         overlayElement.innerHTML = info;
+        //     } else {
+        //         overlay.setPosition(undefined);
+        //     }
+        // });
+
+        function handleFeatureHover(e) {
+            const pixel = e.pixel;
+            const feature = map.forEachFeatureAtPixel(
+                pixel,
+                (feature) => feature
+            );
+            if (feature) {
+                const info = feature.get("NIMI1");
+                const element = overlay.getElement();
+                if (!element) {
+                    return;
+                }
+                element.innerHTML = info;
+                element.classList.add("bus-stop-overlay");
+                overlay.setPosition(map.getCoordinateFromPixel(pixel));
+            } else {
+                overlay.setPosition(undefined);
+            }
+        }
+
+        map.on("pointermove", handleFeatureHover);
 
         function coords(e: MapBrowserEvent<PointerEvent>) {
             const view = map.getView();
@@ -98,7 +169,7 @@ function OLMap() {
     return (
         <div>
             <div ref={mapRef} id="map" />
-            <SideBar toggleLayers={toggleLayers} layer={layer} />
+            <SideBar toggleLayers={toggleLayers} layers={layers} />
         </div>
     );
 }
