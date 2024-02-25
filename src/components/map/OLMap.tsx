@@ -25,15 +25,24 @@ function OLMap() {
         line3: false,
     });
 
+    // const [mapState, setMapState] = useState<Map | null>(null);
+    const [layerMap, setLayerMap] = useState<Record<
+        string,
+        VectorLayer<VectorSource<Feature<Geometry>>>
+    > | null>(null);
+
     useGeographic();
 
-    function toggleLayer(line: string) {
-        setLayerVisibility((prev) => ({
-            ...prev,
-            [line]: !prev[line],
-        }));
+    function toggleLayerVisibility(layerName: string) {
+        const layer = layerMap?.[layerName];
 
-        console.log(layerVisibility);
+        if (layer) {
+            layer.setVisible(!layer.getVisible());
+            setLayerVisibility((prev) => ({
+                ...prev,
+                [layerName]: !prev[layerName],
+            }));
+        }
     }
 
     useEffect(() => {
@@ -78,12 +87,14 @@ function OLMap() {
 
         const vectorLayer2 = new VectorLayer({
             source: vectorSource2 as VectorSource<Feature<Geometry>>,
-            visible: layerVisibility["line2"],
+            visible: layerVisibility.line2,
         });
         const vectorLayer3 = new VectorLayer({
             source: vectorSource3 as VectorSource<Feature<Geometry>>,
-            visible: layerVisibility["line3"],
+            visible: layerVisibility.line3,
         });
+
+        setLayerMap({ line2: vectorLayer2, line3: vectorLayer3 });
 
         const map = new Map({
             target: mapRef.current,
@@ -96,19 +107,38 @@ function OLMap() {
             ],
             view: new View({
                 center: [24.87413567501612, 60.19903248030195],
-                zoom: 14,
+                zoom: 10,
             }),
         });
+
+        // setMapState(map);
 
         return () => {
             map.dispose();
         };
-    }, [geojsonData, layerVisibility]);
+    }, [geojsonData]);
+
+    // function addVectorLayersToMap() {
+    //     if (!mapState || !layerMap) return;
+
+    //     const addedLayerNames = new Set<string>();
+
+    //     Object.entries(layerMap).forEach(([layerName, layer]) => {
+    //         if (!addedLayerNames.has(layerName)) {
+    //             mapState.addLayer(layer);
+    //             addedLayerNames.add(layerName);
+    //         }
+    //     });
+    // }
+
+    // useEffect(() => {
+    //     addVectorLayersToMap();
+    // }, [mapState]);
 
     return (
         <div>
             <div ref={mapRef} id="map" />
-            <SideBar toggleLayer={toggleLayer} />
+            <SideBar toggleLayerVisibility={toggleLayerVisibility} />
         </div>
     );
 }

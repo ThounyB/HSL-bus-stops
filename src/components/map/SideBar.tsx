@@ -1,21 +1,15 @@
 import "./sidebar.css";
-
 interface Props {
-    toggleLayer: (line: string) => void;
-    layerVisibility?: boolean;
+    toggleLayerVisibility: (layerName: string) => void;
 }
-function SideBar({ toggleLayer }: Props) {
-    const handleLayerToggle = (line: string) => {
-        // Call the function from OLMap to toggle layer visibility
-        toggleLayer(line);
-    };
+function SideBar({ toggleLayerVisibility }: Props) {
     return (
         <aside className="sidebar">
             <ul>
                 <li>
                     <button
                         className="toggle-button"
-                        onClick={() => handleLayerToggle("line2")}
+                        onClick={() => toggleLayerVisibility("line2")}
                     >
                         {/* <img src={icon}></img> */}2
                     </button>
@@ -23,7 +17,7 @@ function SideBar({ toggleLayer }: Props) {
                 <li>
                     <button
                         className="toggle-button"
-                        onClick={() => handleLayerToggle("line3")}
+                        onClick={() => toggleLayerVisibility("line3")}
                     >
                         3
                     </button>
