@@ -1,7 +1,11 @@
+.map-view {
+    display: flex;
+}
 #map {
-    position: absolute;
-    top: 0;
-    right: 100px;
-    bottom: 0;
+    /* position: absolute;
+    top: 0; */
+    /* right: 100px; */
+    /* bottom: 0; */
+    flex: 1;
     width: 100%;
 }

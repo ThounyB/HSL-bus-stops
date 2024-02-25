@@ -12,17 +12,26 @@ import Feature from "ol/Feature";
 import Geometry from "ol/geom/Geometry";
 import MapBrowserEvent from "ol/MapBrowserEvent";
 import { useGeographic } from "ol/proj";
+import SideBar from "./SideBar";
 
 function OLMap() {
     const [geojsonData, setGeojsonData] = useState(null);
     const mapRef = useRef(null);
 
+    const [layer, setLayer] = useState<VectorLayer<
+        VectorSource<Feature<Geometry>>
+    > | null>(null);
+
     useGeographic();
+
+    function toggleLayers(layer: VectorLayer<VectorSource<Feature<Geometry>>>) {
+        layer.setVisible(!layer.getVisible());
+    }
 
     useEffect(() => {
         const fetchGeoJson = async () => {
             try {
-                const response = await fetch("src/assets/export.geojson");
+                const response = await fetch("src/assets/stops.geojson");
                 if (!response.ok) {
                     throw new Error(
                         `Failed to fetch GeoJSON (${response.status} ${response.statusText})`
@@ -42,11 +51,7 @@ function OLMap() {
     useEffect(() => {
         if (!mapRef.current || !geojsonData) return;
 
-        console.log(geojsonData);
-
         const features = new GeoJSON().readFeatures(geojsonData);
-
-        console.log(features);
 
         const vectorSource = new VectorSource({
             features: features,
@@ -54,7 +59,10 @@ function OLMap() {
 
         const vectorLayer = new VectorLayer({
             source: vectorSource as VectorSource<Feature<Geometry>>,
+            visible: true,
         });
+
+        setLayer(vectorLayer);
 
         const map = new Map({
             target: mapRef.current,
@@ -65,8 +73,8 @@ function OLMap() {
                 vectorLayer,
             ],
             view: new View({
-                center: [29.77208484658834, 62.58383087994005], // Start from Joensuu
-                zoom: 12,
+                center: [24.87413567501612, 60.19903248030195],
+                zoom: 14,
             }),
         });
 
@@ -87,7 +95,12 @@ function OLMap() {
         };
     }, [geojsonData]);
 
-    return <div ref={mapRef} id="map" />;
+    return (
+        <div className="map-view">
+            <div ref={mapRef} id="map" />
+            <SideBar toggleLayers={toggleLayers} layer={layer} />
+        </div>
+    );
 }
 
 export default OLMap;
