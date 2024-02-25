@@ -10,22 +10,30 @@ import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import Feature from "ol/Feature";
 import Geometry from "ol/geom/Geometry";
-import MapBrowserEvent from "ol/MapBrowserEvent";
 import { useGeographic } from "ol/proj";
 import SideBar from "./SideBar";
+
+interface LayerVisibility {
+    [key: string]: boolean;
+}
 
 function OLMap() {
     const [geojsonData, setGeojsonData] = useState(null);
     const mapRef = useRef(null);
-
-    const [layer, setLayer] = useState<VectorLayer<
-        VectorSource<Feature<Geometry>>
-    > | null>(null);
+    const [layerVisibility, setLayerVisibility] = useState<LayerVisibility>({
+        line2: true,
+        line3: false,
+    });
 
     useGeographic();
 
-    function toggleLayers(layer: VectorLayer<VectorSource<Feature<Geometry>>>) {
-        layer.setVisible(!layer.getVisible());
+    function toggleLayer(line: string) {
+        setLayerVisibility((prev) => ({
+            ...prev,
+            [line]: !prev[line],
+        }));
+
+        console.log(layerVisibility);
     }
 
     useEffect(() => {
@@ -53,16 +61,29 @@ function OLMap() {
 
         const features = new GeoJSON().readFeatures(geojsonData);
 
-        const vectorSource = new VectorSource({
-            features: features,
+        const filteredFeatures2 = features.filter(
+            (feature) => feature.get("VERKKO") === 2
+        );
+
+        const filteredFeatures3 = features.filter(
+            (feature) => feature.get("VERKKO") === 3
+        );
+
+        const vectorSource2 = new VectorSource({
+            features: filteredFeatures2,
+        });
+        const vectorSource3 = new VectorSource({
+            features: filteredFeatures3,
         });
 
-        const vectorLayer = new VectorLayer({
-            source: vectorSource as VectorSource<Feature<Geometry>>,
-            visible: true,
+        const vectorLayer2 = new VectorLayer({
+            source: vectorSource2 as VectorSource<Feature<Geometry>>,
+            visible: layerVisibility["line2"],
         });
-
-        setLayer(vectorLayer);
+        const vectorLayer3 = new VectorLayer({
+            source: vectorSource3 as VectorSource<Feature<Geometry>>,
+            visible: layerVisibility["line3"],
+        });
 
         const map = new Map({
             target: mapRef.current,
@@ -70,7 +91,8 @@ function OLMap() {
                 new TileLayer({
                     source: new OSM(),
                 }),
-                vectorLayer,
+                vectorLayer2,
+                vectorLayer3,
             ],
             view: new View({
                 center: [24.87413567501612, 60.19903248030195],
@@ -78,27 +100,15 @@ function OLMap() {
             }),
         });
 
-        function coords(e: MapBrowserEvent<PointerEvent>) {
-            const view = map.getView();
-            const center = view.getCenter();
-            const zoom = view.getZoom();
-            console.log("View Center:", center);
-            console.log("Zoom Level:", zoom);
-
-            console.log("click coords ", e.coordinate);
-        }
-
-        map.on("click", (e) => coords(e));
-
         return () => {
             map.dispose();
         };
-    }, [geojsonData]);
+    }, [geojsonData, layerVisibility]);
 
     return (
         <div>
             <div ref={mapRef} id="map" />
-            <SideBar toggleLayers={toggleLayers} layer={layer} />
+            <SideBar toggleLayer={toggleLayer} />
         </div>
     );
 }

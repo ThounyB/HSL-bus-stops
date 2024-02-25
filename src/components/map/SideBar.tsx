@@ -1,27 +1,31 @@
-import VectorLayer from "ol/layer/Vector";
 import "./sidebar.css";
-import VectorSource from "ol/source/Vector";
-import { Feature } from "ol";
-import { Geometry } from "ol/geom";
-import icon from "../bus-solid.svg";
 
 interface Props {
-    toggleLayers: (layer: VectorLayer<VectorSource<Feature<Geometry>>>) => void;
-    layer: VectorLayer<VectorSource<Feature<Geometry>>> | null;
+    toggleLayer: (line: string) => void;
+    layerVisibility?: boolean;
 }
-function SideBar({ toggleLayers, layer }: Props) {
-    if (!layer) {
-        return;
-    }
+function SideBar({ toggleLayer }: Props) {
+    const handleLayerToggle = (line: string) => {
+        // Call the function from OLMap to toggle layer visibility
+        toggleLayer(line);
+    };
     return (
         <aside className="sidebar">
             <ul>
                 <li>
                     <button
                         className="toggle-button"
-                        onClick={() => toggleLayers(layer)}
+                        onClick={() => handleLayerToggle("line2")}
                     >
-                        <img src={icon}></img>
+                        {/* <img src={icon}></img> */}2
+                    </button>
+                </li>
+                <li>
+                    <button
+                        className="toggle-button"
+                        onClick={() => handleLayerToggle("line3")}
+                    >
+                        3
                     </button>
                 </li>
             </ul>
