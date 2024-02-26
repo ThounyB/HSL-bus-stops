@@ -25,9 +25,9 @@ function OLMap() {
     const [layerVisibility, setLayerVisibility] = useState<LayerVisibility>({
         line0: false,
         line1: false,
-        line2: false,
+        line2: true,
         line3: false,
-        line4: true,
+        line4: false,
     });
 
     const [layerMap, setLayerMap] = useState<Record<
