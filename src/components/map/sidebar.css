@@ -3,7 +3,7 @@
     top: 0;
     right: 0;
     overflow-y: auto;
-    background-color: white;
+    background-color: rgb(249, 242, 242);
     width: 100px;
     height: 100vh;
     box-shadow: -10px 2px 30px -2px #8f8787;
@@ -16,6 +16,7 @@ ul {
     list-style: none;
     margin: 2rem 0 0 0;
     padding: 0;
+    padding: 0 0.2rem;
 }
 
 li {
@@ -27,13 +28,18 @@ li {
 }
 
 .toggle-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
     height: 100%;
     border: none;
     cursor: pointer;
-    background-color: white;
+    background-color: rgb(169, 169, 218);
     user-select: none;
     flex-grow: 1;
+    color: black;
+    box-shadow: 2px 2px 15px 2px rgba(34, 34, 163, 0.553);
 }
 
 .toggle-button img {
@@ -42,7 +48,19 @@ li {
     pointer-events: none;
 }
 
-img {
-    width: 32px;
-    height: 32px;
+.toggle-button.active {
+    background-color: rgba(21, 21, 183, 0.957);
+    color: white;
+}
+
+.top {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    box-shadow: 10px 0px 15px 0px blue;
+}
+.top img {
+    width: 3rem;
+    height: 3rem;
 }

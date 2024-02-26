@@ -27,7 +27,7 @@ function OLMap() {
         line1: false,
         line2: false,
         line3: false,
-        line4: false,
+        line4: true,
     });
 
     const [layerMap, setLayerMap] = useState<Record<
@@ -130,14 +130,6 @@ function OLMap() {
                 const coordinates = geometry.getCoordinates();
 
                 const nimi1 = feature.get("NIMI1");
-                // const nimi2 = feature.get("NIMI2");
-
-                // const p1 = document.createElement("p");
-                // const p2 = document.createElement("p");
-                // p1.textContent = nimi1;
-                // p2.textContent = nimi2;
-                // overlayElement.appendChild(p1);
-                // overlayElement.appendChild(p2);
 
                 overlayElement.textContent = nimi1;
 
@@ -154,7 +146,10 @@ function OLMap() {
     return (
         <div>
             <div ref={mapRef} id="map" />
-            <SideBar toggleLayerVisibility={toggleLayerVisibility} />
+            <SideBar
+                toggleLayerVisibility={toggleLayerVisibility}
+                layerVisibility={layerVisibility}
+            />
         </div>
     );
 }
