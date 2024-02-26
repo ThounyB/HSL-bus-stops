@@ -1,29 +1,42 @@
-import VectorLayer from "ol/layer/Vector";
 import "./sidebar.css";
-import VectorSource from "ol/source/Vector";
-import { Feature } from "ol";
-import { Geometry } from "ol/geom";
-import icon from "../bus-solid.svg";
-
+import logo from "./bus-solid.svg";
 interface Props {
-    toggleLayers: (layer: VectorLayer<VectorSource<Feature<Geometry>>>) => void;
-    layer: VectorLayer<VectorSource<Feature<Geometry>>> | null;
+    toggleLayerVisibility: (layerName: string) => void;
+    layerVisibility: Record<string, boolean>;
 }
-function SideBar({ toggleLayers, layer }: Props) {
-    if (!layer) {
-        return;
+function SideBar({ toggleLayerVisibility, layerVisibility }: Props) {
+    function toggleStyle(
+        layerVisibility: Record<string, boolean>,
+        line: string
+    ) {
+        if (layerVisibility[line]) {
+            return "toggle-button active";
+        } else {
+            return "toggle-button";
+        }
     }
+
     return (
         <aside className="sidebar">
+            <div className="top">
+                <h1>HSL Pysäkit</h1>
+                <div>
+                    <img src={logo} alt="buss-icon" />
+                </div>
+            </div>
             <ul>
-                <li>
-                    <button
-                        className="toggle-button"
-                        onClick={() => toggleLayers(layer)}
-                    >
-                        <img src={icon}></img>
-                    </button>
-                </li>
+                {Object.keys(layerVisibility).map((line) => {
+                    return (
+                        <li>
+                            <button
+                                className={toggleStyle(layerVisibility, line)}
+                                onClick={() => toggleLayerVisibility(line)}
+                            >
+                                <p>{`Verkosto ${line.charAt(4)}`}</p>
+                            </button>
+                        </li>
+                    );
+                })}
             </ul>
         </aside>
     );

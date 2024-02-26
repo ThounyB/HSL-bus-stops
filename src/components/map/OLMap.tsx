@@ -10,22 +10,42 @@ import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import Feature from "ol/Feature";
 import Geometry from "ol/geom/Geometry";
-import MapBrowserEvent from "ol/MapBrowserEvent";
 import { useGeographic } from "ol/proj";
 import SideBar from "./SideBar";
+import Overlay from "ol/Overlay";
+import { Point } from "ol/geom";
+
+interface LayerVisibility {
+    [key: string]: boolean;
+}
 
 function OLMap() {
     const [geojsonData, setGeojsonData] = useState(null);
     const mapRef = useRef(null);
+    const [layerVisibility, setLayerVisibility] = useState<LayerVisibility>({
+        line0: false,
+        line1: false,
+        line2: true,
+        line3: false,
+        line4: false,
+    });
 
-    const [layer, setLayer] = useState<VectorLayer<
-        VectorSource<Feature<Geometry>>
+    const [layerMap, setLayerMap] = useState<Record<
+        string,
+        VectorLayer<VectorSource<Feature<Geometry>>>
     > | null>(null);
 
     useGeographic();
 
-    function toggleLayers(layer: VectorLayer<VectorSource<Feature<Geometry>>>) {
-        layer.setVisible(!layer.getVisible());
+    function toggleLayerVisibility(layerName: string) {
+        const layer = layerMap?.[layerName];
+        if (layer) {
+            layer.setVisible(!layer.getVisible());
+            setLayerVisibility((prev) => ({
+                ...prev,
+                [layerName]: !prev[layerName],
+            }));
+        }
     }
 
     useEffect(() => {
@@ -51,18 +71,31 @@ function OLMap() {
     useEffect(() => {
         if (!mapRef.current || !geojsonData) return;
 
+        const lines = [0, 1, 2, 3, 4];
+
         const features = new GeoJSON().readFeatures(geojsonData);
 
-        const vectorSource = new VectorSource({
-            features: features,
-        });
+        const mapLayers: VectorLayer<VectorSource<Feature<Geometry>>>[] = [];
 
-        const vectorLayer = new VectorLayer({
-            source: vectorSource as VectorSource<Feature<Geometry>>,
-            visible: true,
-        });
+        for (const lineNumber of lines) {
+            const lineFeatures = features.filter(
+                (feature) => feature.get("VERKKO") === lineNumber
+            );
 
-        setLayer(vectorLayer);
+            const vectorSource = new VectorSource({ features: lineFeatures });
+            const vectorLayer = new VectorLayer({
+                source: vectorSource as VectorSource<Feature<Geometry>>,
+                visible: layerVisibility[`line${lineNumber}`],
+            });
+
+            mapLayers.push(vectorLayer);
+        }
+
+        const newLayerMAp = Object.fromEntries(
+            mapLayers.map((layer, index) => [`line${index}`, layer])
+        );
+
+        setLayerMap(newLayerMAp);
 
         const map = new Map({
             target: mapRef.current,
@@ -70,26 +103,41 @@ function OLMap() {
                 new TileLayer({
                     source: new OSM(),
                 }),
-                vectorLayer,
+                ...mapLayers,
             ],
             view: new View({
                 center: [24.87413567501612, 60.19903248030195],
-                zoom: 14,
+                zoom: 10,
             }),
         });
 
-        function coords(e: MapBrowserEvent<PointerEvent>) {
-            const view = map.getView();
-            const center = view.getCenter();
-            const zoom = view.getZoom();
-            console.log("View Center:", center);
-            console.log("Zoom Level:", zoom);
+        const overlayElement = document.createElement("div");
+        overlayElement.classList.add("info-overlay");
 
-            console.log("click coords ", e.coordinate);
-        }
+        const overlay = new Overlay({
+            element: overlayElement,
+            autoPan: true,
+        });
 
-        map.on("click", (e) => coords(e));
+        map.addOverlay(overlay);
 
+        map.on("pointermove", (event) => {
+            const features = map.getFeaturesAtPixel(event.pixel);
+            const feature = features ? (features[0] as Feature) : null;
+
+            if (feature) {
+                const geometry = feature.getGeometry() as Point;
+                const coordinates = geometry.getCoordinates();
+
+                const nimi1 = feature.get("NIMI1");
+
+                overlayElement.textContent = nimi1;
+
+                overlay.setPosition(coordinates);
+            } else {
+                overlay.setPosition(undefined);
+            }
+        });
         return () => {
             map.dispose();
         };
@@ -98,7 +146,10 @@ function OLMap() {
     return (
         <div>
             <div ref={mapRef} id="map" />
-            <SideBar toggleLayers={toggleLayers} layer={layer} />
+            <SideBar
+                toggleLayerVisibility={toggleLayerVisibility}
+                layerVisibility={layerVisibility}
+            />
         </div>
     );
 }
