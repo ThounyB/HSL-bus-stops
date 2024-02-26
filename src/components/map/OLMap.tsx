@@ -51,7 +51,7 @@ function OLMap() {
     useEffect(() => {
         const fetchGeoJson = async () => {
             try {
-                const response = await fetch("src/assets/stops.geojson");
+                const response = await fetch("stops.geojson");
                 if (!response.ok) {
                     throw new Error(
                         `Failed to fetch GeoJSON (${response.status} ${response.statusText})`
