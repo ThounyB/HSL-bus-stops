@@ -27,7 +27,7 @@ function SideBar({ toggleLayerVisibility, layerVisibility }: Props) {
             <ul>
                 {Object.keys(layerVisibility).map((line) => {
                     return (
-                        <li>
+                        <li key={line}>
                             <button
                                 className={toggleStyle(layerVisibility, line)}
                                 onClick={() => toggleLayerVisibility(line)}
